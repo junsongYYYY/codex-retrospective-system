@@ -49,6 +49,12 @@ function Write-Utf8BomText {
     [System.IO.File]::WriteAllText($Path, $Text, $utf8Bom)
 }
 
+function Normalize-Newlines {
+    param([string]$Text)
+
+    return ($Text -replace "`r`n", "`n") -replace "`r", "`n"
+}
+
 function Ensure-Directory {
     param([string]$Path)
 
@@ -108,7 +114,7 @@ function Ensure-ControlledBlock {
 
     if ($current -match $pattern) {
         $newContent = [regex]::Replace($current, $pattern, [System.Text.RegularExpressions.MatchEvaluator]{ param($m) $Block })
-        if ($newContent -eq $current) {
+        if ((Normalize-Newlines $newContent) -eq (Normalize-Newlines $current)) {
             Add-ItemStatus $skipped $Path
             return
         }
@@ -331,4 +337,3 @@ if ($warnings.Count -gt 0) {
 }
 
 exit 0
-
